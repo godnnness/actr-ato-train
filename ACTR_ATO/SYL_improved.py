@@ -2,8 +2,8 @@
 # encoding: utf-8
 """
 @File   : game
-@author : wuziheng
-@Date   : 3/20/18
+@author : Yulong Sun
+@Date   : 3/20/19
 @license:
 """
 import random
