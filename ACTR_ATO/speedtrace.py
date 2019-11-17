@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     start_time = datetime.datetime.now()
 
-    for i in range(2191,2120):
+    for i in range(2191,2379):
         t += 1
         # t = time.time()
         # speed_target[0] = math.log2(t+1)
@@ -154,19 +154,17 @@ if __name__ == '__main__':
     plt.title('Speed ​​tracking')
     plt.xlabel('time')
     plt.ylabel('speed value')
-    plt.legend("实际速度为：",actualgroup,"目标速度为：",targetgroup)
+    plt.legend()
 
     end_time = datetime.datetime.now()
     interval = (end_time - start_time).seconds
-    print("程序共执行了：", interval,"起始时间为：",start_time,"结束时间为：",end_time)
-    print()
+    print("程序共执行了：",interval)
 
 
     my_y_ticks = np.arange(0, 100, 0.3)
-    mx_x_ticks = np.arange(0, 2000, 0.3)
+
 
     plt.yticks(my_y_ticks)
-    plt.xticks(mx_x_ticks)
 
     plt.show()
 
