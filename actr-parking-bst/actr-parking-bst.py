@@ -15,7 +15,7 @@
 
 import actr
 import random
-import  time
+import time
 
 actr.load_act_r_model(r"C:\Users\syl\Desktop\ACTR_ATO\actr-parking-bst\actr-parking.lisp")
 
@@ -35,11 +35,11 @@ exp_stims = [[15, 250, 55, 125], [10, 155, 22, 101], [14, 200, 37, 112],
              [22, 200, 32, 114], [14, 200, 37, 112], [15, 250, 55, 125]]
 
 no_learn_stims = [[15, 200, 41, 103], [10, 200, 29, 132]]
-test_stim = [[40,300,80,30,15,5,30]]
+test_stim = [[45,310,85,78,75,34,14,15,30]]
 
 
 
-def build_display(a, b, c, d, e, f, goal):
+def build_display(a, b, c, d, e, f, g, h, goal):
     global window, target, current_stick, done, current_line, choice
 
     target = goal
@@ -53,8 +53,11 @@ def build_display(a, b, c, d, e, f, goal):
     actr.add_button_to_exp_window(window, text="B", x=5, y=48, action=["bst-button-pressed", b, "over"], height=24, width=40)
     actr.add_button_to_exp_window(window, text="C", x=5, y=73, action=["bst-button-pressed", c, "under"], height=24,width=40)
     actr.add_button_to_exp_window(window, text="D", x=5, y=98, action=["bst-button-pressed", d, "under"], height=24,width=40)
-    actr.add_button_to_exp_window(window, text="E", x=5, y=120, action=["bst-button-pressed", e, "under"], height=24,width=40)
-    actr.add_button_to_exp_window(window, text="F", x=5, y=140, action=["bst-button-pressed", f, "under"], height=24, width=40)
+    actr.add_button_to_exp_window(window, text="E", x=5, y=123, action=["bst-button-pressed", e, "under"], height=24,width=40)
+    actr.add_button_to_exp_window(window, text="F", x=5, y=148, action=["bst-button-pressed", f, "under"], height=24, width=40)
+    actr.add_button_to_exp_window(window, text="G", x=5, y=173, action=["bst-button-pressed", g, "under"], height=24, width=40)
+    actr.add_button_to_exp_window(window, text="H", x=5, y=198, action=["bst-button-pressed", h, "under"], height=24, width=40)
+
 
     # actr.add_text_to_exp_window(window, text="实际距离： ", x=5, y=123, height=24, width=65)
     actr.add_button_to_exp_window(window, text="Reset", x=5, y=340, action="bst-reset-button-pressed", height=24, width=65)
@@ -64,10 +67,12 @@ def build_display(a, b, c, d, e, f, goal):
     actr.add_line_to_exp_window(window, [75, 110], [d + 75, 110], "black")
     actr.add_line_to_exp_window(window, [75, 135], [e + 75, 135], "black")
     actr.add_line_to_exp_window(window, [75, 160], [f + 75, 160], "black")
+    actr.add_line_to_exp_window(window, [75, 185], [g + 75, 185], "black")
+    actr.add_line_to_exp_window(window, [75, 215], [h + 75, 215], "black")
     actr.add_line_to_exp_window(window, [75, 310], [goal + 75, 310], "green")
     # actr.add_line_to_exp_window(window, [75, 320], [current_stick + 75, 215], "blue")
-    actr.add_text_to_exp_window(window, "注意！\nB表示目标距离；模型先注视ABCDEF四条线，之后将目标线与C对比，求其差值，依次比较A,D,E,F,直至出现Done,结束对标。\nA表示四级制动，制动距离较长；"
-                                        "\nC表示一级制动，制动距离最长;", x=400, y=310, color='blue', height=200, width=150, font_size=12)
+    # actr.add_text_to_exp_window(window, "注意！\nB表示目标距离；模型先注视ABCDEF四条线，之后将目标线与C对比，\n求其差值，依次比较A,D,E,F,直至出现Done,结束对标。\nA表示四级制动，制动距离较长；"
+    #                                     "\nC表示一级制动，制动距离最长;", x=400, y=310, color='blue', height=200, width=150, font_size=12)
 
 
 
@@ -112,11 +117,11 @@ actr.add_command("bst-reset-button-pressed", reset_display,
 def update_current_line():
     global current_line, done
 
-    if current_stick == target:
+    if current_stick <= target:
         done = True
         actr.modify_line_for_exp_window(current_line, [75, 330], [target + 75, 330])
-        actr.add_text_to_exp_window(window, "Done", x=5, y=200)
-        actr.add_text_to_exp_window(window, "对标成功！", x=300, y=200, color='red', height=20, width=75,font_size=24)
+        actr.add_text_to_exp_window(window, "Done", x=210, y=210)
+        # actr.add_text_to_exp_window(window, "对标成功！", x=300, y=200, color='red', height=20, width=75,font_size=24)
     elif current_stick == 0:
         if current_line:
             actr.remove_items_from_exp_window(window, current_line)
@@ -161,25 +166,25 @@ def bst_set(human, vis, stims, learn=True):
 
     return result
 # 测试数据采用的是no_learn_stims，应该修改
-def test(n=1, human=False):
-        l = len(test_stim)
-
-        result = [0] * l
-
-        if human or (n <= 3):
-            v = True
-        else:
-            v = False
-
-        for i in range(n):
-
-            d = bst_set(human, v, test_stim, False)
-
-            for j in range(l):
-                if d[j] == "over":
-                    result[j] += 1
-
-        return result
+# def test(n=1, human=False):
+#         l = len(test_stim)
+#
+#         result = [0] * l
+#
+#         if human or (n <= 3):
+#             v = True
+#         else:
+#             v = False
+#
+#         for i in range(n):
+#
+#             d = bst_set(human, v, test_stim, False)
+#
+#             for j in range(l):
+#                 if d[j] == "over":
+#                     result[j] += 1
+#
+#         return result
 
 
 def experiment(n, human=False):
@@ -229,5 +234,5 @@ def production_u_value(prod):
 
 
 if __name__ == "__main__":
-    test(2, human=False)
-    # experiment(1, human=False)
+    # test(2, human=False)
+    experiment(3, human=False)
