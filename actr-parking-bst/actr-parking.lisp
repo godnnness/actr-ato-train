@@ -1,20 +1,27 @@
 
 (clear-all)
+(require-extra "emma")
+(require-extra "threads")
 
 (define-model bst
 
-(sgp :v nil :esc t :egs 3 :show-focus t :ul t :ult t :needs-mouse t :visual-num-finsts 7)
+(sgp :v t :esc t :egs 3 :show-focus t :ul t :ult t :needs-mouse t :visual-num-finsts 8 :trace-detail high :emma t :auto-attend t
+:saccade-feat-time 0.00  :saccade-init-time 0.01 :eye-spot-color "yellow" )
+
 
 (chunk-type try-strategy strategy state)
-(chunk-type encoding a-loc b-loc c-loc  d-loc e-loc f-loc goal-loc length over under)
+(chunk-type encoding a-loc b-loc c-loc  d-loc e-loc f-loc g-loc h-loc goal-loc length over under)
+(chunk-type xiagao word)
 
 (define-chunks
     (goal isa try-strategy state start)
     (start) (find-line) (looking) (attending)
     (encode-under) (encode-over) (choose-strategy)
     (calculate-difference) (consider-next) (check-for-done)
-    (read-done) (evaluate-c) (evaluate-d)(evaluate-d)(evaluate-f)(prepare-mouse) (evaluate-a)
+    (read-done) (evaluate-c) (evaluate-d)(evaluate-e)(evaluate-f)(evaluate-g)(evaluate-h)(prepare-mouse) (evaluate-a)
     (over) (under) (move-mouse) (wait-for-click))
+
+(set-visloc-default :attended nil)
 
 
 (p start-trial
@@ -158,6 +165,40 @@
    =goal>
       state      find-line)
 
+(p encode-line-g
+   =goal>
+      isa        try-strategy
+      state      attending
+   =imaginal>
+      isa        encoding
+      f-loc      =f
+      g-loc   nil
+   =visual>
+      isa        line
+      screen-pos =pos
+  ==>
+   =imaginal>
+      g-loc      =pos
+   =goal>
+      state      find-line)
+
+(p encode-line-h
+   =goal>
+      isa        try-strategy
+      state      attending
+   =imaginal>
+      isa        encoding
+      g-loc      =g
+      h-loc   nil
+   =visual>
+      isa        line
+      screen-pos =pos
+  ==>
+   =imaginal>
+      h-loc      =pos
+   =goal>
+      state      find-line)
+
 
 (p encode-line-goal
    =goal>
@@ -233,7 +274,8 @@
       isa      line
       width    =goal-len
   ==>
-   !bind! =val (abs (- =current-len =goal-len))
+   !bind! =val (- =current-len =goal-len)
+   !output! (current-len - goal-len is =val and current-len is =current-len and goal-len is =goal-len)
    =imaginal>
       length   =val
    =goal>
@@ -245,7 +287,7 @@
       state     consider-next
    =imaginal>
       isa       encoding
-      length    0
+      <= length    0
   ==>
    =goal>
       state     check-for-done
@@ -275,9 +317,11 @@
       isa    text
       value  "done"
   ==>
+  !stop!
    +goal>
       isa    try-strategy
-      state  start)
+      state  start
+   )
 
 (p consider-c
    =goal>
@@ -477,15 +521,90 @@
       kind      oval
       value     "f")
 
+(p consider-g
+   =goal>
+      isa        try-strategy
+      state      evaluate-f
+   =imaginal>
+      isa        encoding
+      g-loc      =g-loc
+      length     =difference
+   =visual>
+      isa        line
+    > width      =difference
+   ?visual>
+      state      free
+  ==>
+   =imaginal>
+   =goal>
+      state      evaluate-g
+   +visual>
+      isa        move-attention
+      screen-pos =g-loc)
 
+(p choose-g
+   =goal>
+      isa       try-strategy
+      state     evaluate-g
+   =imaginal>
+      isa       encoding
+      length    =difference
+   =visual>
+      isa       line
+   <= width     =difference
+  ==>
+   =imaginal>
+   =goal>
+      state     prepare-mouse
+   +visual-location>
+      isa       visual-location
+      kind      oval
+      value     "g")
 
+(p consider-h
+   =goal>
+      isa        try-strategy
+      state      evaluate-g
+   =imaginal>
+      isa        encoding
+      h-loc      =h-loc
+      length     =difference
+   =visual>
+      isa        line
+    > width      =difference
+   ?visual>
+      state      free
+  ==>
+   =imaginal>
+   =goal>
+      state      evaluate-h
+   +visual>
+      isa        move-attention
+      screen-pos =h-loc)
 
-
+(p choose-g
+   =goal>
+      isa       try-strategy
+      state     evaluate-h
+   =imaginal>
+      isa       encoding
+      length    =difference
+   =visual>
+      isa       line
+   <= width     =difference
+  ==>
+   =imaginal>
+   =goal>
+      state     prepare-mouse
+   +visual-location>
+      isa       visual-location
+      kind      oval
+      value     "h")
 
 (p reset
    =goal>
       isa       try-strategy
-      state     evaluate-f
+      state     evaluate-h
    =imaginal>
       isa       encoding
       length    =difference
@@ -598,9 +717,8 @@
 (goal-focus goal)
 
 (spp decide-over :u 13)
-(spp decide-under :u 13)
 (spp force-over :u 10)
-(spp force-under :u 10)
+
 
 (spp pick-another-strategy :reward 0)
-(spp read-done :reward 20))
+(spp read-done :reward 100))
